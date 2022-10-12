@@ -1,24 +1,14 @@
----
-title: Node HTTP Module
-description: A HTTP module server
-tags:
-  - http
-  - nodejs
-  - javascript
----
+# Kinopio Twitter Replies
 
-# HTTP Module Example
+Processes tweets that mention @kinopioClub in real-time
 
-This example starts an [HTTP Module](https://nodejs.org/api/http.html) server.
+# Install
 
-[![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/new/template/ZweBXA)
+copy `.env.sample` to `.env` and update with your twitter auth
 
-## 💁‍♀️ How to use
+    npm install
 
-- Install dependencies `yarn`
-- Connect to your Railway project `railway link`
-- Start the development server `railway run yarn start`
+# Run
 
-## 📝 Notes
-
-The server started simply returns a `Hello World` payload. The server code is located in `server.mjs`.
+    npm run serve
+    http://localhost:8060
