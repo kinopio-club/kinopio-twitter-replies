@@ -5,8 +5,6 @@ if (process.env.NODE_ENV !== 'production') {
 }
 
 import http from 'http'
-// import fetch from 'node-fetch'
-// import { Headers } from 'node-fetch'
 import { URL, URLSearchParams } from 'url'
 import express from 'express'
 import bodyParser from 'body-parser'
