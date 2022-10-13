@@ -42,17 +42,31 @@ const clearRules = async () => {
 const addRules = async () => {
   const rules = await client.v2.updateStreamRules({
     add: [
+      { value: '@kinopioclub save', tag: 'save thread' },
       { value: 'kinopio.club has:links', tag: 'someone shared a space' }, // TODO to discord
-      { value: '@kinopioclub save', tag: 'save thread' }, // TODO POST a reply to tweet w kinopio twitter-thread url
-      { value: '@kinopioclub -save', tag: 'message to kinopio' }, // TODO to discord #twitter-mentions, admin/moderator-only channel
+      { value: '@kinopioclub -save', tag: 'message to kinopio' }, // TODO to discord
     ]
   })
   console.log('🐸 rules added', rules)
 }
 
 const handleTweet = async (data) => {
-  console.log('🕊', data)
-
+  const username = data.includes.users[0].username
+  const tweet = data.data
+  const url = `https://twitter.com/${username}/status/${tweet.id}` // to send to discord
+  const rule = data.matching_rules[0].tag
+  console.log('🕊', data, tweet, username, url, rule)
+  if (rule === 'save thread') {
+    // reply to tweet
+    const spaceUrl = `kinopio.club/twitter-thread/${tweet.id}`
+    await client.v2.reply(
+      `test reply to previously \n\ncreated tweet. \n\$${spaceUrl} \n yolo.`,
+      tweet.id,
+    );
+  } else {
+    // post to discord
+    //
+  }
 }
 
 const listen = async () => {
