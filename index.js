@@ -4,30 +4,47 @@ if (process.env.NODE_ENV !== 'production') {
   dotenv.config()
 }
 
-import { createServer } from 'http'
+import http from 'http'
 import fetch from 'node-fetch'
 import { Headers } from 'node-fetch'
 import { URL, URLSearchParams } from 'url'
+import WebSocket from 'ws'
+import express from 'express'
+import bodyParser from 'body-parser'
 
 let rules
 
-createServer((request, response) => {
-  response.write('kinopio-twitter-replies is online')
-  response.end()
-}).listen(process.env.PORT)
+const app = express()
+app.use(bodyParser.json({ limit: '650kb' }))
+const server = http.createServer(app)
 
+app.listen(process.env.PORT)
+console.log('🔮 server is listening')
 
-console.log('☮️')
+// http
+app.get('/', function (request, response) {
+  response.json({
+    message: 'kinopio-twitter-replies is online',
+    repo: 'https://github.com/kinopio-club/kinopio-twitter-replies'
+  })
+})
+
+// websocket
+const websockets = new WebSocket.Server({ server })
+
 
 // // https://developer.twitter.com/en/docs/tutorials/stream-tweets-in-real-time
+
+
 
 const init = async () => {
   if (!rules) {
     rules = await filterRules()
   }
-  console.log('💖💖💖💖💖💖', rules)
-  // tweets()
+  console.log('💖💖💖💖💖💖')
+  tweets()
 }
+
 const filterRules = async () => {
   // Filtering criteria are applied to the filtered stream endpoints in the form of rules
   const headers = new Headers({
@@ -44,12 +61,15 @@ const filterRules = async () => {
   const options = { method: 'POST', headers, body: JSON.stringify(body) }
   const response = await fetch(url, options)
   const result = await response.json()
-  console.log('☃️☃️',result)
+  console.log('☃️ Rules',result)
   return result
 }
-// const tweets = async () => {
 
-// }
+
+const tweets = async () => {
+  const url = 'https://api.twitter.com/2/tweets/search/stream?tweet.fields=context_annotations&expansions=author_id'
+
+}
 
 
 
