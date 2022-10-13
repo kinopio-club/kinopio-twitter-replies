@@ -40,12 +40,11 @@ const clearRules = async () => {
 }
 
 const addRules = async () => {
-
   const rules = await client.v2.updateStreamRules({
     add: [
       { value: 'kinopio.club has:links', tag: 'someone shared a space' }, // TODO to discord
       { value: '@kinopioclub save', tag: 'save thread' }, // TODO POST a reply to tweet w kinopio twitter-thread url
-      { value: '@kinopioclub -save', tag: 'message to kinopio' }, // TODO to discord
+      { value: '@kinopioclub -save', tag: 'message to kinopio' }, // TODO to discord #twitter-mentions, admin/moderator-only channel
     ]
   })
   console.log('🐸 rules added', rules)
@@ -53,6 +52,7 @@ const addRules = async () => {
 
 const handleTweet = async (data) => {
   console.log('🕊', data)
+
 }
 
 const listen = async () => {
