@@ -5,20 +5,19 @@ if (process.env.NODE_ENV !== 'production') {
 }
 
 import http from 'http'
-import fetch from 'node-fetch'
-import { Headers } from 'node-fetch'
+// import fetch from 'node-fetch'
+// import { Headers } from 'node-fetch'
 import { URL, URLSearchParams } from 'url'
 import express from 'express'
 import bodyParser from 'body-parser'
-
-let rules
+import { ETwitterStreamEvent, TweetStream, TwitterApi, ETwitterApiError } from 'twitter-api-v2'
+const client = new TwitterApi(process.env.TWITTER_API_BEARER_TOKEN)
 
 const app = express()
 app.use(bodyParser.json({ limit: '650kb' }))
 const server = http.createServer(app)
-
 app.listen(process.env.PORT)
-console.log('🔮 server is listening')
+console.log('🔮 server is listening to http')
 
 // http
 app.get('/', function (request, response) {
@@ -28,52 +27,46 @@ app.get('/', function (request, response) {
   })
 })
 
-// websocket
-// const websockets = new WebSocket.Server({ server })
-
-
-// // https://developer.twitter.com/en/docs/tutorials/stream-tweets-in-real-time
-
-
-
-const init = async () => {
-  if (!rules) {
-    rules = await filterRules()
+const clearRules = async () => {
+  let rules = await client.v2.streamRules()
+  if (rules.data) {
+    const rulesIds = rules.data.map(rule => rule.id)
+    await client.v2.updateStreamRules({
+      delete: {
+        ids: rulesIds,
+      },
+    })
   }
-  console.log('💖💖💖💖💖💖')
-  tweets()
+  rules = await client.v2.streamRules()
+  console.log('💣 rules cleared', rules)
 }
 
-const filterRules = async () => {
-  // Filtering criteria are applied to the filtered stream endpoints in the form of rules
-  const headers = new Headers({
-    'Content-Type': 'application/json',
-    'Authorization': `Bearer ${process.env.TWITTER_API_BEARER_TOKEN}`
-  })
-  const body = {
+const addRules = async () => {
+  const rules = await client.v2.updateStreamRules({
     add: [
-      { value: 'from:twitterdev from:twitterapi has:links' } // to:kinopioclub text:save
-      // https://developer.twitter.com/en/docs/twitter-api/tweets/filtered-stream/integrate/build-a-rule
+      { value: 'to:readwise', tag: 'test readwise tag' }, // to:kinopioclub text:save
+      { value: 'TypeScript', tag: 'test ts tag' }
     ]
-  }
-  const url = 'https://api.twitter.com/2/tweets/search/stream/rules'
-  const options = { method: 'POST', headers, body: JSON.stringify(body) }
-  const response = await fetch(url, options)
-  const result = await response.json()
-  console.log('☃️ Rules',result)
-  return result
+  })
+  console.log('🐸 rules added', rules)
 }
 
-
-const tweets = async () => {
-  const url = 'https://api.twitter.com/2/tweets/search/stream?tweet.fields=context_annotations&expansions=author_id'
-
+const handleTweet = async (data) => {
+  console.log('🕊', data)
 }
 
+const listen = async () => {
+  await clearRules()
+  await addRules()
+  const stream = await client.v2.searchStream({ expansions: ['author_id'], 'user.fields': ['username'] })
+  console.log('🔮 server is listening to stream')
+  stream.on(
+    ETwitterStreamEvent.Data,
+    eventData => {
+      handleTweet(eventData)
+    },
+  )
+  stream.autoReconnect = true
+}
 
-
-// export default () {
-
-// }
-// init()
-init()
+listen()
