@@ -8,7 +8,6 @@ import http from 'http'
 import fetch from 'node-fetch'
 import { Headers } from 'node-fetch'
 import { URL, URLSearchParams } from 'url'
-import WebSocket from 'ws'
 import express from 'express'
 import bodyParser from 'body-parser'
 
@@ -30,7 +29,7 @@ app.get('/', function (request, response) {
 })
 
 // websocket
-const websockets = new WebSocket.Server({ server })
+// const websockets = new WebSocket.Server({ server })
 
 
 // // https://developer.twitter.com/en/docs/tutorials/stream-tweets-in-real-time
