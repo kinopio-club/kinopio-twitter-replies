@@ -40,10 +40,12 @@ const clearRules = async () => {
 }
 
 const addRules = async () => {
+
   const rules = await client.v2.updateStreamRules({
     add: [
-      { value: 'to:readwise', tag: 'test readwise tag' }, // to:kinopioclub text:save
-      { value: 'TypeScript', tag: 'test ts tag' }
+      { value: 'kinopio.club has:links', tag: 'someone shared a space' }, // TODO to discord
+      { value: '@kinopioclub save', tag: 'save thread' }, // TODO POST a reply to tweet w kinopio twitter-thread url
+      { value: '@kinopioclub -save', tag: 'message to kinopio' }, // TODO to discord
     ]
   })
   console.log('🐸 rules added', rules)
