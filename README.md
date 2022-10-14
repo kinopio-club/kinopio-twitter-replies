@@ -14,6 +14,13 @@ copy `.env.sample` to `.env` and update with your twitter auth
 
     npm install
 
+# One-Time Auth
+
+Follow the steps in `index.js` to allow tweeting
+
+    http://localhost:8060/sign-in
+    http://localhost:8060/sign-in-complete
+
 # Run
 
     npm run serve
