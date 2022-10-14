@@ -108,22 +108,25 @@ const addRules = async () => {
   console.log('🐸 rules added', rules)
 }
 
+const replyToTweet({ tweet, url }) {
+  // TODO after shipping this, don't reply to @s from dev env, just log it
+  const spaceUrl = `kinopio.club/twitter-thread/${tweet.id}`
+  await tweetClient.v2.reply(
+    `test reply \n\ncreated tweet. \n\$${spaceUrl} \n yolo.`,
+    tweet.id,
+  )
+}
+
 const handleTweet = async (data) => {
   const username = data.includes.users[0].username
   const tweet = data.data
   const url = `https://twitter.com/${username}/status/${tweet.id}` // to send to discord
   const rule = data.matching_rules[0].tag
   console.log('🕊', data, tweet, username, url, rule)
-  // reply to tweet
   if (rule === 'save thread') {
-    const spaceUrl = `kinopio.club/twitter-thread/${tweet.id}`
-    await tweetClient.v2.reply(
-      `test reply to previously \n\ncreated tweet. \n\$${spaceUrl} \n yolo.`,
-      tweet.id,
-    )
-  // post to discord
+    replyToTweet({ tweet, url })
   } else {
-    //
+    // post to discord
   }
 }
 
