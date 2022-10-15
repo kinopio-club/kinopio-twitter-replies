@@ -9,6 +9,7 @@ import { URL, URLSearchParams } from 'url'
 import express from 'express'
 import bodyParser from 'body-parser'
 import { ETwitterStreamEvent, TweetStream, TwitterApi, ETwitterApiError } from 'twitter-api-v2'
+import _ from 'lodash'
 
 let steamClient, tweetClient
 
@@ -19,13 +20,9 @@ if (process.env.TWITTER_ACCESS_TOKEN) {
     accessToken: process.env.TWITTER_ACCESS_TOKEN,
     accessSecret: process.env.TWITTER_ACCESS_SECRET,
   })
-  tweetClient.readWrite
-  // await tweetClient.login()
-  // await tweetClient.currentUser()
-
-  // console.log('🌳', tweetClient)
-  // const verifiedUser = await tweetClient.currentUser()
-  console.log('🕊 tweet client started')
+  const verifiedUser = await tweetClient.currentUser()
+  console.log('🌳 connected to twitter user', verifiedUser.screen_name)
+  console.log('🕊 tweetClient started')
 } else {
   console.log('🚑 missing auth for tweetClient')
 }
@@ -72,11 +69,10 @@ app.get('/sign-in-complete', async (request, response) => {
     accessSecret: oauth_token_secret,
   })
   const { client: loggedClient, accessToken, accessSecret } = await tweetClient.login(pin)
+  // AUTH STEP 3: copy keys from loggedClient to env
   console.log('💖',loggedClient)
-  const verifiedUser = await loggedClient.currentUser()
-  console.log('🌳 verify persistent user', verifiedUser)
   response.json({
-    message: 'update env with TWITTER_ACCESS_TOKEN and TWITTER_ACCESS_SECRET',
+    message: 'update env with TWITTER_ACCESS_TOKEN and TWITTER_ACCESS_SECRET from 💖 log',
     oauth_token,
     oauth_token_secret,
     loggedClient
@@ -100,21 +96,22 @@ const clearRules = async () => {
 const addRules = async () => {
   const rules = await steamClient.v2.updateStreamRules({
     add: [
-      { value: '@kinopioclub save', tag: 'save thread' },
-      { value: 'kinopio.club has:links', tag: 'someone shared a space' }, // TODO to discord
-      { value: '@kinopioclub -save', tag: 'message to kinopio' }, // TODO to discord
+      { value: '@kinopioclub -from:kinopioclub', tag: 'mention' },
     ]
   })
   console.log('🐸 rules added', rules)
 }
 
-const replyToTweet({ tweet, url }) {
+const replyWithSave = async (tweet) => {
+  const spaceUrl = `https://kinopio.club/twitter-thread/${tweet.id}`
+  const kaomojis = ['ヾ(＾∇＾)', '(^-^*)/', '( ﾟ▽ﾟ)/', '( ^_^)／', '(^o^)/', '(^ _ ^)/', '( ´ ▽ ` )ﾉ', '(ﾉ´∀｀*)ﾉ', 'ヾ(´･ω･｀)', '☆ﾐ(o*･ω･)ﾉ', '＼(＾▽＾*)', '(*＾▽＾)／', '(￣▽￣)ノ', 'ヾ(-_-;)', 'ヾ( ‘ – ‘*)', 'ヾ(＠⌒ー⌒＠)ノ', '~ヾ ＾∇＾', '~ヾ(＾∇＾)', '＼(￣O￣)', '(｡･ω･)ﾉﾞ', '(*^･ｪ･)ﾉ', '(￣∠ ￣ )ﾉ', '(*￣Ｏ￣)ノ', 'ヾ(｡´･_●･`｡)☆', '(/・0・)', '(ノ^∇^)', '(,, ･∀･)ﾉ゛', '(。･д･)ﾉﾞ', '＼(°o°；）', '(｡´∀｀)ﾉ', '(o´ω`o)ﾉ', '( ･ω･)ﾉ', '(。^_・)ノ', '( ・_・)ノ', '＼(-o- )', '(。-ω-)ﾉ', '＼(-_- )', '＼( ･_･)', 'ヾ(´￢｀)ﾉ', 'ヾ(☆▽☆)', '(^ Q ^)/゛', '~(＾◇^)/', 'ヘ(‘◇’、)/', 'ヘ(°◇、°)ノ', 'ヘ(°￢°)ノ', 'ヘ(゜Д、゜)ノ', '（ ゜ρ゜)ノ', 'ー( ´ ▽ ` )ﾉ', 'ヽ(๏∀๏ )ﾉ']
+  const kaomoji = _.sample(kaomojis)
   // TODO after shipping this, don't reply to @s from dev env, just log it
-  const spaceUrl = `kinopio.club/twitter-thread/${tweet.id}`
-  await tweetClient.v2.reply(
-    `test reply \n\ncreated tweet. \n\$${spaceUrl} \n yolo.`,
-    tweet.id,
-  )
+  // if process.env.NODE_ENV === 'production'
+  const message = `${kaomoji}\n\nHere's a space to explore this twitter thread,\n\n${spaceUrl}\n\n(p.s. anyone can use this to make their own space – no sign up required)`
+  await tweetClient.v1.reply(message, tweet.id)
+
+  console.log('💌 replied with save', tweet.id)
 }
 
 const handleTweet = async (data) => {
@@ -122,11 +119,13 @@ const handleTweet = async (data) => {
   const tweet = data.data
   const url = `https://twitter.com/${username}/status/${tweet.id}` // to send to discord
   const rule = data.matching_rules[0].tag
-  console.log('🕊', data, tweet, username, url, rule)
-  if (rule === 'save thread') {
-    replyToTweet({ tweet, url })
+  const isSave = (rule === 'mention') && tweet.text.includes('save')
+  console.log('📬', tweet, username, url, rule, isSave)
+  if (isSave) {
+    // replyWithSave(tweet)
   } else {
     // post to discord
+    console.log('🌷 TODO post to discord', username, tweet, url)
   }
 }
 
