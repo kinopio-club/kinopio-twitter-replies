@@ -11,7 +11,7 @@ import bodyParser from 'body-parser'
 import { ETwitterStreamEvent, TweetStream, TwitterApi, ETwitterApiError } from 'twitter-api-v2'
 import _ from 'lodash'
 
-let steamClient, tweetClient
+let steamClient, tweetClient, clientUserName
 
 if (process.env.TWITTER_ACCESS_TOKEN) {
   tweetClient = new TwitterApi({
@@ -21,7 +21,8 @@ if (process.env.TWITTER_ACCESS_TOKEN) {
     accessSecret: process.env.TWITTER_ACCESS_SECRET,
   })
   const verifiedUser = await tweetClient.currentUser()
-  console.log('🌳 connected to twitter user', verifiedUser.screen_name)
+  clientUserName = verifiedUser.screen_name
+  console.log('🌳 connected to twitter user', clientUserName)
   console.log('🕊 tweetClient started, waiting for streamClient…')
 } else {
   console.log('🚑 missing auth for tweetClient, use /sign-in')
@@ -111,8 +112,8 @@ const addRules = async () => {
 
 // respond to streaming tweets
 
-const tweetUrl = (username, tweetId) => {
-  return `https://twitter.com/${username}/status/${tweetId}`
+const tweetUrl = (tweetId) => {
+  return `https://twitter.com/${loggedInUserName}/status/${tweetId}`
 }
 
 const replyWithSaveMessage = async (tweet) => {
@@ -122,8 +123,7 @@ const replyWithSaveMessage = async (tweet) => {
   const message = `${kaomoji}\n\nHere's a space to explore this twitter thread,\n\n${spaceUrl}\n\n(p.s. anyone can use this to make their own space – no sign up required)`
   if (process.env.NODE_ENV === 'production') {
     const reply = await tweetClient.v1.reply(message, tweet.id)
-    const url = tweetUrl(reply.in_reply_to_screen_name, reply.id)
-    console.log('💌 replied', reply, url)
+    console.log('💌 replied', reply, tweetUrl(reply.id))
   } else {
     console.log('✉️ preflight reply', message)
   }
@@ -141,10 +141,9 @@ const handleTweet = async (data) => {
   if (isSave) {
     replyWithSaveMessage(tweet)
   } else {
-    const url = tweetUrl(username, tweet.id)
     // TODO post to discord
     // defer to next version, pending noise becoming an issue
-    console.log('💐 TODO post to discord', username, tweet, url)
+    console.log('💐 TODO post to discord', username, tweet, tweetUrl(tweet.id))
   }
 }
 
