@@ -90,7 +90,7 @@ const clearRules = async () => {
     })
   }
   rules = await steamClient.v2.streamRules()
-  console.log('💣 rules cleared', rules)
+  console.log('🌚 rules cleared', rules)
 }
 
 const addRules = async () => {
@@ -99,7 +99,7 @@ const addRules = async () => {
       { value: '@kinopioclub -from:kinopioclub', tag: 'mention' },
     ]
   })
-  console.log('🐸 rules added', rules)
+  console.log('🌝 rules added', rules)
 }
 
 const replyWithSave = async (tweet) => {
@@ -115,17 +115,22 @@ const replyWithSave = async (tweet) => {
 }
 
 const handleTweet = async (data) => {
+  data.includes.users.forEach(user => {
+    console.log(user)
+  })
+  // console.log(data)
   const username = data.includes.users[0].username
   const tweet = data.data
   const url = `https://twitter.com/${username}/status/${tweet.id}` // to send to discord
   const rule = data.matching_rules[0].tag
   const isSave = (rule === 'mention') && tweet.text.includes('save')
-  console.log('📬', tweet, username, url, rule, isSave)
+  console.log('💁‍♀️', tweet, username, url, rule, isSave)
   if (isSave) {
     // replyWithSave(tweet)
   } else {
-    // post to discord
-    console.log('🌷 TODO post to discord', username, tweet, url)
+    // TODO post to discord
+    // defer to next version, pending noise becoming an issue
+    console.log('💐 TODO post to discord', username, tweet, url)
   }
 }
 
