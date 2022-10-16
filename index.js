@@ -22,7 +22,7 @@ if (process.env.TWITTER_ACCESS_TOKEN) {
   })
   const verifiedUser = await tweetClient.currentUser()
   console.log('🌳 connected to twitter user', verifiedUser.screen_name)
-  console.log('🕊 tweetClient started')
+  console.log('🕊 tweetClient started, waiting for streamClient…')
 } else {
   console.log('🚑 missing auth for tweetClient, use /sign-in')
 }
@@ -45,7 +45,7 @@ app.get('/', (request, response) => {
 // AUTH STEP 1: sign in to allow tweeting
 // You should only need to do this once per environment
 // http://localhost:8060/sign-in
-// https://kinopio-twitter-replies-production.up.railway.app/sign-in
+// https://twitter-replies.kinopio.club/sign-in
 app.get('/sign-in', async (request, response) => {
   console.log('🐢 /sign-in')
   tweetClient = new TwitterApi({
@@ -62,6 +62,7 @@ app.get('/sign-in', async (request, response) => {
 })
 // AUTH STEP 2: complete sign in
 // http://localhost:8060/sign-in-complete?pin=123&oauth_token=ABC&oauth_token_secret=XYZ
+// https://twitter-replies.kinopio.club/sign-in-complete?pin=123&oauth_token=ABC&oauth_token_secret=XYZ
 app.get('/sign-in-complete', async (request, response) => {
   console.log('🐢 /sign-in-complete')
   const { pin, oauth_token, oauth_token_secret } = request.query
@@ -166,6 +167,7 @@ const listen = async () => {
   }
 }
 
+console.log('waiting to listen to stream…')
 setTimeout(() => {
   console.log('🌷 start listen to stream')
   listen()
