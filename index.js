@@ -24,7 +24,7 @@ if (process.env.TWITTER_ACCESS_TOKEN) {
   console.log('🌳 connected to twitter user', verifiedUser.screen_name)
   console.log('🕊 tweetClient started')
 } else {
-  console.log('🚑 missing auth for tweetClient')
+  console.log('🚑 missing auth for tweetClient, use /sign-in')
 }
 
 const app = express()
@@ -44,7 +44,13 @@ app.get('/', (request, response) => {
 // AUTH STEP 1: sign in to allow tweeting
 // You should only need to do this once per environment
 // http://localhost:8060/sign-in
+// https://kinopio-twitter-replies-production.up.railway.app/sign-in
 app.get('/sign-in', async (request, response) => {
+  console.log('☮️ sign in auth',{
+    appKey: process.env.TWITTER_CONSUMER_KEY,
+    appSecret: process.env.TWITTER_CONSUMER_SECRET
+  })
+
   tweetClient = new TwitterApi({
     appKey: process.env.TWITTER_CONSUMER_KEY,
     appSecret: process.env.TWITTER_CONSUMER_SECRET
