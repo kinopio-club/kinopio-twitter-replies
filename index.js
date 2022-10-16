@@ -151,17 +151,21 @@ const handleTweet = async (data) => {
 
 const listen = async () => {
   steamClient = new TwitterApi(process.env.TWITTER_API_BEARER_TOKEN)
+  console.log('🌸 server is listening to stream')
   await clearRules()
   await addRules()
-  const stream = await steamClient.v2.searchStream({ expansions: ['author_id'], 'user.fields': ['username'] })
-  console.log('🌸 server is listening to stream')
-  stream.on(
-    ETwitterStreamEvent.Data,
-    eventData => {
-      handleTweet(eventData)
-    },
-  )
-  stream.autoReconnect = true
+  try {
+    const stream = await steamClient.v2.searchStream({ expansions: ['author_id'], 'user.fields': ['username'] })
+    stream.on(
+      ETwitterStreamEvent.Data,
+      eventData => {
+        handleTweet(eventData)
+      },
+    )
+    stream.autoReconnect = true
+  } catch (error) {
+    console.error('🚒', error)
+  }
 }
 
 listen()
