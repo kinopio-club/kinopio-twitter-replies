@@ -79,6 +79,8 @@ app.get('/sign-in-complete', async (request, response) => {
   })
 })
 
+// init streaming
+
 const clearRules = async () => {
   let rules = await steamClient.v2.streamRules()
   if (rules.data) {
@@ -90,7 +92,7 @@ const clearRules = async () => {
     })
   }
   rules = await steamClient.v2.streamRules()
-  console.log('🌚 rules cleared', rules)
+  console.log('🌚 rules cleared')
 }
 
 const addRules = async () => {
@@ -99,35 +101,42 @@ const addRules = async () => {
       { value: '@kinopioclub -from:kinopioclub', tag: 'mention' },
     ]
   })
-  console.log('🌝 rules added', rules)
+  console.log('🌝 rules added')
 }
 
-const replyWithSave = async (tweet) => {
+// respond to streaming tweets
+
+const tweetUrl = (username, tweetId) => {
+  return `https://twitter.com/${username}/status/${tweetId}`
+}
+
+const replyWithSaveMessage = async (tweet) => {
   const spaceUrl = `https://kinopio.club/twitter-thread/${tweet.id}`
   const kaomojis = ['ヾ(＾∇＾)', '(^-^*)/', '( ﾟ▽ﾟ)/', '( ^_^)／', '(^o^)/', '(^ _ ^)/', '( ´ ▽ ` )ﾉ', '(ﾉ´∀｀*)ﾉ', 'ヾ(´･ω･｀)', '☆ﾐ(o*･ω･)ﾉ', '＼(＾▽＾*)', '(*＾▽＾)／', '(￣▽￣)ノ', 'ヾ(-_-;)', 'ヾ( ‘ – ‘*)', 'ヾ(＠⌒ー⌒＠)ノ', '~ヾ ＾∇＾', '~ヾ(＾∇＾)', '＼(￣O￣)', '(｡･ω･)ﾉﾞ', '(*^･ｪ･)ﾉ', '(￣∠ ￣ )ﾉ', '(*￣Ｏ￣)ノ', 'ヾ(｡´･_●･`｡)☆', '(/・0・)', '(ノ^∇^)', '(,, ･∀･)ﾉ゛', '(。･д･)ﾉﾞ', '＼(°o°；）', '(｡´∀｀)ﾉ', '(o´ω`o)ﾉ', '( ･ω･)ﾉ', '(。^_・)ノ', '( ・_・)ノ', '＼(-o- )', '(。-ω-)ﾉ', '＼(-_- )', '＼( ･_･)', 'ヾ(´￢｀)ﾉ', 'ヾ(☆▽☆)', '(^ Q ^)/゛', '~(＾◇^)/', 'ヘ(‘◇’、)/', 'ヘ(°◇、°)ノ', 'ヘ(°￢°)ノ', 'ヘ(゜Д、゜)ノ', '（ ゜ρ゜)ノ', 'ー( ´ ▽ ` )ﾉ', 'ヽ(๏∀๏ )ﾉ']
   const kaomoji = _.sample(kaomojis)
-  // TODO after shipping this, don't reply to @s from dev env, just log it
-  // if process.env.NODE_ENV === 'production'
   const message = `${kaomoji}\n\nHere's a space to explore this twitter thread,\n\n${spaceUrl}\n\n(p.s. anyone can use this to make their own space – no sign up required)`
-  await tweetClient.v1.reply(message, tweet.id)
-
-  console.log('💌 replied with save', tweet.id)
+  if (process.env.NODE_ENV === 'production') {
+    const reply = await tweetClient.v1.reply(message, tweet.id)
+    const url = tweetUrl(reply.in_reply_to_screen_name, reply.id)
+    console.log('💌 replied', reply, url)
+  } else {
+    console.log('✉️ preflight reply', message)
+  }
 }
 
 const handleTweet = async (data) => {
   data.includes.users.forEach(user => {
-    console.log(user)
+    console.log('🐶',user)
   })
-  // console.log(data)
   const username = data.includes.users[0].username
   const tweet = data.data
-  const url = `https://twitter.com/${username}/status/${tweet.id}` // to send to discord
   const rule = data.matching_rules[0].tag
   const isSave = (rule === 'mention') && tweet.text.includes('save')
-  console.log('💁‍♀️', tweet, username, url, rule, isSave)
+  console.log('💁‍♀️', tweet, username, rule, isSave)
   if (isSave) {
-    // replyWithSave(tweet)
+    replyWithSaveMessage(tweet)
   } else {
+    const url = tweetUrl(username, tweet.id)
     // TODO post to discord
     // defer to next version, pending noise becoming an issue
     console.log('💐 TODO post to discord', username, tweet, url)
