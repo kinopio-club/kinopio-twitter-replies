@@ -154,7 +154,7 @@ const listen = async () => {
   await clearRules()
   await addRules()
   const stream = await steamClient.v2.searchStream({ expansions: ['author_id'], 'user.fields': ['username'] })
-  console.log('🔮 server is listening to stream')
+  console.log('🌸 server is listening to stream')
   stream.on(
     ETwitterStreamEvent.Data,
     eventData => {
