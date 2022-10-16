@@ -35,6 +35,7 @@ console.log('🔮 server is listening to http')
 
 // http
 app.get('/', (request, response) => {
+  console.log('🐢 /')
   response.json({
     message: 'kinopio-twitter-replies is online',
     repo: 'https://github.com/kinopio-club/kinopio-twitter-replies'
@@ -46,11 +47,7 @@ app.get('/', (request, response) => {
 // http://localhost:8060/sign-in
 // https://kinopio-twitter-replies-production.up.railway.app/sign-in
 app.get('/sign-in', async (request, response) => {
-  console.log('☮️ sign in auth',{
-    appKey: process.env.TWITTER_CONSUMER_KEY,
-    appSecret: process.env.TWITTER_CONSUMER_SECRET
-  })
-
+  console.log('🐢 /sign-in')
   tweetClient = new TwitterApi({
     appKey: process.env.TWITTER_CONSUMER_KEY,
     appSecret: process.env.TWITTER_CONSUMER_SECRET
@@ -66,6 +63,7 @@ app.get('/sign-in', async (request, response) => {
 // AUTH STEP 2: complete sign in
 // http://localhost:8060/sign-in-complete?pin=123&oauth_token=ABC&oauth_token_secret=XYZ
 app.get('/sign-in-complete', async (request, response) => {
+  console.log('🐢 /sign-in-complete')
   const { pin, oauth_token, oauth_token_secret } = request.query
   console.log('🌿', pin, oauth_token, oauth_token_secret)
   const tweetClient = new TwitterApi({
