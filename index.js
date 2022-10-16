@@ -169,4 +169,4 @@ const listen = async () => {
 setTimeout(() => {
   console.log('🌷 start listen to stream')
   listen()
-}, 10 × 60 × 1000) // wait 10 minutes to start streaming
+}, 10 * 60 * 1000) // wait 10 minutes to start streaming
