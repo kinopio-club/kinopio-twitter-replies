@@ -113,7 +113,7 @@ const addRules = async () => {
 // respond to streaming tweets
 
 const tweetUrl = (tweetId) => {
-  return `https://twitter.com/${loggedInUserName}/status/${tweetId}`
+  return `https://twitter.com/${clientUserName}/status/${tweetId}`
 }
 
 const replyWithSaveMessage = async (tweet) => {
