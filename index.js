@@ -9,7 +9,8 @@ import { URL, URLSearchParams } from 'url'
 import express from 'express'
 import bodyParser from 'body-parser'
 import { ETwitterStreamEvent, TweetStream, TwitterApi, ETwitterApiError } from 'twitter-api-v2'
-import _ from 'lodash'
+
+import utils from './utils.js'
 
 let steamClient, tweetClient, clientUserName
 
@@ -110,62 +111,34 @@ const addRules = async () => {
   console.log('🌝 rules added', rules)
 }
 
-// utils
-
-const tweetUrl = ({ tweetId, username }) => {
-  username = username || clientUserName
-  return `https://twitter.com/${username}/status/${tweetId}`
-}
-
-const replyMessage = (data) => {
-  const tweet = data.data
-  const username = data.includes.users[0].username
-  // const spaceUrl = `https://kinopio.club/twitter-thread/${tweet.id}`
-  const kaomojis = ['ヾ(＾∇＾)', '(^-^*)/', '( ﾟ▽ﾟ)/', '( ^_^)／', '(^o^)/', '(^ _ ^)/', '( ´ ▽ ` )ﾉ', '(ﾉ´∀｀*)ﾉ', 'ヾ(´･ω･｀)', '☆ﾐ(o*･ω･)ﾉ', '＼(＾▽＾*)', '(*＾▽＾)／', '(￣▽￣)ノ', 'ヾ(-_-;)', 'ヾ( ‘ – ‘*)', 'ヾ(＠⌒ー⌒＠)ノ', '~ヾ ＾∇＾', '~ヾ(＾∇＾)', '＼(￣O￣)', '(｡･ω･)ﾉﾞ', '(*^･ｪ･)ﾉ', '(￣∠ ￣ )ﾉ', '(*￣Ｏ￣)ノ', 'ヾ(｡´･_●･`｡)☆', '(/・0・)', '(ノ^∇^)', '(,, ･∀･)ﾉ゛', '(。･д･)ﾉﾞ', '＼(°o°；）', '(｡´∀｀)ﾉ', '(o´ω`o)ﾉ', '( ･ω･)ﾉ', '(。^_・)ノ', '( ・_・)ノ', '＼(-o- )', '(。-ω-)ﾉ', '＼(-_- )', '＼( ･_･)', 'ヾ(´￢｀)ﾉ', 'ヾ(☆▽☆)', '(^ Q ^)/゛', '~(＾◇^)/', 'ヘ(‘◇’、)/', 'ヘ(°◇、°)ノ', 'ヘ(°￢°)ノ', 'ヘ(゜Д、゜)ノ', '（ ゜ρ゜)ノ', 'ー( ´ ▽ ` )ﾉ', 'ヽ(๏∀๏ )ﾉ']
-  const kaomoji = _.sample(kaomojis)
-  const message = `@${username} ${kaomoji}\n\nHere's a space to explore this twitter thread,\n\n(p.s. anyone can use this to make their own space – no sign up required)`
-  return message
-}
-
 // respond to streaming tweets
 
 const tweetReply = async (data) => {
   const tweet = data.data
+  // const isKinopioUser = utils.isKinopioUser(data)
+    // const twitterUserId = data.includes.users[0].id
   console.log('💁‍♀️', data)
-  // let excludedUsers = []
-  // data.includes.users.forEach((user, index) => {
-  //   if (index > 0) {
-  //     excludedUsers.push(user.id)
-  //   }
-  // })
-  // excludedUsers = excludedUsers.join(',')
-  // console.log('🍋🍋',excludedUsers)
-  const message = replyMessage(data)
+  const message = utils.replyMessageSuccess(data)
   const options = {
     in_reply_to_status_id: tweet.id,
-    // auto_populate_reply_metadata: true,
-    // exclude_reply_user_ids: excludedUsers
   }
   if (process.env.NODE_ENV === 'production') {
-    // const reply = await tweetClient.v1.reply(message, tweet.id_str, { exclude_reply_user_ids: excludedUsers })
     const reply = await tweetClient.v1.tweet(message, options)
-    console.log('💌 replied', reply, options, tweetUrl({ tweetId: reply.id_str }))
+    console.log('💌 replied', reply, options, utils.tweetUrl({ tweetId: reply.id_str }))
   } else {
-    console.log('✉️ preflight reply', message, tweet.id_str)
+    console.log('✉️ preflight reply', message, options, tweet.id_str)
   }
 }
 
 const handleTweet = async (data) => {
-  console.log('☮️☮️',data)
   const rule = data.matching_rules[0].tag
   if (rule === 'reply with save') {
     tweetReply(data)
   } else {
     const username = data.includes.users[0].username
     const tweet = data.data
-    // TODO post to discord
-    // defer to next version, pending noise becoming an issue
-    console.log('💐 TODO post to discord', username, tweet, tweetUrl({ tweetId: tweet.id_str, username }))
+    // TODO post to discord, pending noise becoming an issue
+    console.log('💐 TODO post to discord', username, tweet, utils.tweetUrl({ tweetId: tweet.id_str, username }))
   }
 }
 
