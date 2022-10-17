@@ -115,10 +115,16 @@ const addRules = async () => {
 
 const tweetReply = async (data) => {
   const tweet = data.data
-  // const isKinopioUser = utils.isKinopioUser(data)
-    // const twitterUserId = data.includes.users[0].id
-  console.log('💁‍♀️', data)
-  const message = utils.replyMessageSuccess(data)
+  const username = data.includes.users[0].username
+  const kinopioUser = utils.kinopioUser(username)
+  console.log('💁‍♀️', data, username, kinopioUser)
+  let message
+  if (kinopioUser) {
+    message = utils.replyMessageSuccess(username)
+    // TODO utils.addTwitterThreadSpace(tweet, kinopioUser)
+  } else {
+    message = utils.replyMessageError(username)
+  }
   const options = {
     in_reply_to_status_id: tweet.id,
   }
