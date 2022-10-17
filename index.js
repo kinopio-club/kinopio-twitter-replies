@@ -110,12 +110,21 @@ const addRules = async () => {
   console.log('🌝 rules added', rules)
 }
 
-// respond to streaming tweets
+// utils
 
-const tweetUrl = (tweetId, username) => {
+const tweetUrl = ({ tweetId, username }) => {
   username = username || clientUserName
   return `https://twitter.com/${username}/status/${tweetId}`
 }
+
+const replyMessage = (data) => {
+  const spaceUrl = `https://kinopio.club/twitter-thread/${tweet.id}`
+  const kaomojis = ['ヾ(＾∇＾)', '(^-^*)/', '( ﾟ▽ﾟ)/', '( ^_^)／', '(^o^)/', '(^ _ ^)/', '( ´ ▽ ` )ﾉ', '(ﾉ´∀｀*)ﾉ', 'ヾ(´･ω･｀)', '☆ﾐ(o*･ω･)ﾉ', '＼(＾▽＾*)', '(*＾▽＾)／', '(￣▽￣)ノ', 'ヾ(-_-;)', 'ヾ( ‘ – ‘*)', 'ヾ(＠⌒ー⌒＠)ノ', '~ヾ ＾∇＾', '~ヾ(＾∇＾)', '＼(￣O￣)', '(｡･ω･)ﾉﾞ', '(*^･ｪ･)ﾉ', '(￣∠ ￣ )ﾉ', '(*￣Ｏ￣)ノ', 'ヾ(｡´･_●･`｡)☆', '(/・0・)', '(ノ^∇^)', '(,, ･∀･)ﾉ゛', '(。･д･)ﾉﾞ', '＼(°o°；）', '(｡´∀｀)ﾉ', '(o´ω`o)ﾉ', '( ･ω･)ﾉ', '(。^_・)ノ', '( ・_・)ノ', '＼(-o- )', '(。-ω-)ﾉ', '＼(-_- )', '＼( ･_･)', 'ヾ(´￢｀)ﾉ', 'ヾ(☆▽☆)', '(^ Q ^)/゛', '~(＾◇^)/', 'ヘ(‘◇’、)/', 'ヘ(°◇、°)ノ', 'ヘ(°￢°)ノ', 'ヘ(゜Д、゜)ノ', '（ ゜ρ゜)ノ', 'ー( ´ ▽ ` )ﾉ', 'ヽ(๏∀๏ )ﾉ']
+  const kaomoji = _.sample(kaomojis)
+  return `${kaomoji}\n\nHere's a space to explore this twitter thread,\n\n${spaceUrl}\n\n(p.s. anyone can use this to make their own space – no sign up required)`
+}
+
+// respond to streaming tweets
 
 const tweetReply = async (data) => {
   const tweet = data.data
@@ -127,20 +136,19 @@ const tweetReply = async (data) => {
       excludedUsers.push(user.id)
     }
   })
-  const spaceUrl = `https://kinopio.club/twitter-thread/${tweet.id}`
-  const kaomojis = ['ヾ(＾∇＾)', '(^-^*)/', '( ﾟ▽ﾟ)/', '( ^_^)／', '(^o^)/', '(^ _ ^)/', '( ´ ▽ ` )ﾉ', '(ﾉ´∀｀*)ﾉ', 'ヾ(´･ω･｀)', '☆ﾐ(o*･ω･)ﾉ', '＼(＾▽＾*)', '(*＾▽＾)／', '(￣▽￣)ノ', 'ヾ(-_-;)', 'ヾ( ‘ – ‘*)', 'ヾ(＠⌒ー⌒＠)ノ', '~ヾ ＾∇＾', '~ヾ(＾∇＾)', '＼(￣O￣)', '(｡･ω･)ﾉﾞ', '(*^･ｪ･)ﾉ', '(￣∠ ￣ )ﾉ', '(*￣Ｏ￣)ノ', 'ヾ(｡´･_●･`｡)☆', '(/・0・)', '(ノ^∇^)', '(,, ･∀･)ﾉ゛', '(。･д･)ﾉﾞ', '＼(°o°；）', '(｡´∀｀)ﾉ', '(o´ω`o)ﾉ', '( ･ω･)ﾉ', '(。^_・)ノ', '( ・_・)ノ', '＼(-o- )', '(。-ω-)ﾉ', '＼(-_- )', '＼( ･_･)', 'ヾ(´￢｀)ﾉ', 'ヾ(☆▽☆)', '(^ Q ^)/゛', '~(＾◇^)/', 'ヘ(‘◇’、)/', 'ヘ(°◇、°)ノ', 'ヘ(°￢°)ノ', 'ヘ(゜Д、゜)ノ', '（ ゜ρ゜)ノ', 'ー( ´ ▽ ` )ﾉ', 'ヽ(๏∀๏ )ﾉ']
-  const kaomoji = _.sample(kaomojis)
-  const message = `${kaomoji}\n\nHere's a space to explore this twitter thread,\n\n${spaceUrl}\n\n(p.s. anyone can use this to make their own space – no sign up required)`
-  const options = {
-    in_reply_to_status_id: tweet.id_str,
-    auto_populate_reply_metadata: true,
-    exclude_reply_user_ids: excludedUsers
-  }
+  excludedUsers = excludedUsers.join(',')
+  console.log('🍋🍋',excludedUsers)
+  const message = replyMessage(tweet)
+  // const options = {
+  //   in_reply_to_status_id: tweet.id_str,
+  //   auto_populate_reply_metadata: true,
+  //   exclude_reply_user_ids: excludedUsers
+  // }
   if (process.env.NODE_ENV === 'production') {
-    const reply = await tweetClient.v1.tweet(message, options)
-    console.log('💌 replied', reply, tweetUrl({ tweetId: reply.id_str }))
+    const reply = await tweetClient.v1.reply(message, tweet.id_str, { exclude_reply_user_ids: excludedUsers })
+    console.log('💌 replied', reply, options, tweetUrl({ tweetId: reply.id_str }))
   } else {
-    console.log('✉️ preflight reply', message, options)
+    console.log('✉️ preflight reply', message, tweet.id_str)
   }
 }
 
@@ -177,8 +185,8 @@ const listen = async () => {
   }
 }
 
-console.log('waiting to listen to stream…')
-setTimeout(() => {
+// console.log('waiting to listen to stream…')
+// setTimeout(() => {
   console.log('🌷 starting listen to stream')
   listen()
-}, 1 * 60 * 1000) // wait 10 minutes to start streaming
+// }, 10 * 60 * 1000) // wait 10 minutes to start streaming
