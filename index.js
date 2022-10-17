@@ -192,4 +192,4 @@ console.log('waiting to listen to stream…')
 setTimeout(() => {
   console.log('🌷 starting listen to stream')
   listen()
-}, 1 * 60 * 1000) // wait 1 minute to start streaming
+}, 5 * 60 * 1000) // wait 5 minute to start streaming
