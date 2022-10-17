@@ -104,46 +104,56 @@ const clearRules = async () => {
 const addRules = async () => {
   const rules = await steamClient.v2.updateStreamRules({
     add: [
-      { value: '@kinopioclub -from:kinopioclub', tag: 'mention' },
+      { value: '@kinopioclub save -from:kinopioclub', tag: 'reply with save' },
     ]
   })
-  console.log('🌝 rules added')
+  console.log('🌝 rules added', rules)
 }
 
 // respond to streaming tweets
 
-const tweetUrl = (tweetId) => {
-  return `https://twitter.com/${clientUserName}/status/${tweetId}`
+const tweetUrl = (tweetId, username) => {
+  username = username || clientUserName
+  return `https://twitter.com/${username}/status/${tweetId}`
 }
 
-const replyWithSaveMessage = async (tweet) => {
+const tweetReply = async (data) => {
+  const tweet = data.data
+  console.log('💁‍♀️', data)
+  let excludedUsers = []
+  data.includes.users.forEach((user, index) => {
+    console.log('🐶',user, index)
+    if (index > 0) {
+      excludedUsers.push(user.id)
+    }
+  })
   const spaceUrl = `https://kinopio.club/twitter-thread/${tweet.id}`
   const kaomojis = ['ヾ(＾∇＾)', '(^-^*)/', '( ﾟ▽ﾟ)/', '( ^_^)／', '(^o^)/', '(^ _ ^)/', '( ´ ▽ ` )ﾉ', '(ﾉ´∀｀*)ﾉ', 'ヾ(´･ω･｀)', '☆ﾐ(o*･ω･)ﾉ', '＼(＾▽＾*)', '(*＾▽＾)／', '(￣▽￣)ノ', 'ヾ(-_-;)', 'ヾ( ‘ – ‘*)', 'ヾ(＠⌒ー⌒＠)ノ', '~ヾ ＾∇＾', '~ヾ(＾∇＾)', '＼(￣O￣)', '(｡･ω･)ﾉﾞ', '(*^･ｪ･)ﾉ', '(￣∠ ￣ )ﾉ', '(*￣Ｏ￣)ノ', 'ヾ(｡´･_●･`｡)☆', '(/・0・)', '(ノ^∇^)', '(,, ･∀･)ﾉ゛', '(。･д･)ﾉﾞ', '＼(°o°；）', '(｡´∀｀)ﾉ', '(o´ω`o)ﾉ', '( ･ω･)ﾉ', '(。^_・)ノ', '( ・_・)ノ', '＼(-o- )', '(。-ω-)ﾉ', '＼(-_- )', '＼( ･_･)', 'ヾ(´￢｀)ﾉ', 'ヾ(☆▽☆)', '(^ Q ^)/゛', '~(＾◇^)/', 'ヘ(‘◇’、)/', 'ヘ(°◇、°)ノ', 'ヘ(°￢°)ノ', 'ヘ(゜Д、゜)ノ', '（ ゜ρ゜)ノ', 'ー( ´ ▽ ` )ﾉ', 'ヽ(๏∀๏ )ﾉ']
   const kaomoji = _.sample(kaomojis)
   const message = `${kaomoji}\n\nHere's a space to explore this twitter thread,\n\n${spaceUrl}\n\n(p.s. anyone can use this to make their own space – no sign up required)`
   if (process.env.NODE_ENV === 'production') {
-    const reply = await tweetClient.v1.reply(message, tweet.id)
-    console.log('💌 replied', reply, tweetUrl(reply.id))
+    const reply = await tweetClient.v1.tweet(message, {
+      in_reply_to_status_id: tweet.id_str,
+      auto_populate_reply_metadata: true,
+      exclude_reply_user_ids: excludedUsers
+    })
+    console.log('💌 replied', reply, tweetUrl({ tweetId: reply.id_str }))
   } else {
     console.log('✉️ preflight reply', message)
   }
 }
 
 const handleTweet = async (data) => {
-  data.includes.users.forEach(user => {
-    console.log('🐶',user)
-  })
-  const username = data.includes.users[0].username
-  const tweet = data.data
+  console.log('☮️☮️',data)
   const rule = data.matching_rules[0].tag
-  const isSave = (rule === 'mention') && tweet.text.includes('save')
-  console.log('💁‍♀️', tweet, username, rule, isSave)
-  if (isSave) {
-    replyWithSaveMessage(tweet)
+  if (rule === 'reply with save') {
+    tweetReply(data)
   } else {
+    const username = data.includes.users[0].username
+    const tweet = data.data
     // TODO post to discord
     // defer to next version, pending noise becoming an issue
-    console.log('💐 TODO post to discord', username, tweet, tweetUrl(tweet.id))
+    console.log('💐 TODO post to discord', username, tweet, tweetUrl({ tweetId: tweet.id_str, username }))
   }
 }
 
@@ -166,8 +176,8 @@ const listen = async () => {
   }
 }
 
-console.log('waiting to listen to stream…')
-setTimeout(() => {
-  console.log('🌷 start listen to stream')
+// console.log('waiting to listen to stream…')
+// setTimeout(() => {
+  console.log('🌷 starting listen to stream')
   listen()
-}, 10 * 60 * 1000) // wait 10 minutes to start streaming
+// }, 10 * 60 * 1000) // wait 10 minutes to start streaming
