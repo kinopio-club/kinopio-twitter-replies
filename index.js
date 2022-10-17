@@ -32,7 +32,7 @@ const app = express()
 app.use(bodyParser.json({ limit: '650kb' }))
 const server = http.createServer(app)
 app.listen(process.env.PORT)
-console.log('🔮 server is listening to http')
+console.log('server is listening to http')
 
 // http
 app.get('/', (request, response) => {
@@ -123,7 +123,8 @@ const replyMessage = (data) => {
   const spaceUrl = `https://kinopio.club/twitter-thread/${tweet.id}`
   const kaomojis = ['ヾ(＾∇＾)', '(^-^*)/', '( ﾟ▽ﾟ)/', '( ^_^)／', '(^o^)/', '(^ _ ^)/', '( ´ ▽ ` )ﾉ', '(ﾉ´∀｀*)ﾉ', 'ヾ(´･ω･｀)', '☆ﾐ(o*･ω･)ﾉ', '＼(＾▽＾*)', '(*＾▽＾)／', '(￣▽￣)ノ', 'ヾ(-_-;)', 'ヾ( ‘ – ‘*)', 'ヾ(＠⌒ー⌒＠)ノ', '~ヾ ＾∇＾', '~ヾ(＾∇＾)', '＼(￣O￣)', '(｡･ω･)ﾉﾞ', '(*^･ｪ･)ﾉ', '(￣∠ ￣ )ﾉ', '(*￣Ｏ￣)ノ', 'ヾ(｡´･_●･`｡)☆', '(/・0・)', '(ノ^∇^)', '(,, ･∀･)ﾉ゛', '(。･д･)ﾉﾞ', '＼(°o°；）', '(｡´∀｀)ﾉ', '(o´ω`o)ﾉ', '( ･ω･)ﾉ', '(。^_・)ノ', '( ・_・)ノ', '＼(-o- )', '(。-ω-)ﾉ', '＼(-_- )', '＼( ･_･)', 'ヾ(´￢｀)ﾉ', 'ヾ(☆▽☆)', '(^ Q ^)/゛', '~(＾◇^)/', 'ヘ(‘◇’、)/', 'ヘ(°◇、°)ノ', 'ヘ(°￢°)ノ', 'ヘ(゜Д、゜)ノ', '（ ゜ρ゜)ノ', 'ー( ´ ▽ ` )ﾉ', 'ヽ(๏∀๏ )ﾉ']
   const kaomoji = _.sample(kaomojis)
-  return `@${username} ${kaomoji}\n\nHere's a space to explore this twitter thread,\n\n${spaceUrl}\n\n(p.s. anyone can use this to make their own space – no sign up required)`
+  const message = `@${username} ${kaomoji}\n\nHere's a space to explore this twitter thread,\n\n${spaceUrl}\n\n(p.s. anyone can use this to make their own space – no sign up required)`
+  return message
 }
 
 // respond to streaming tweets
@@ -131,18 +132,17 @@ const replyMessage = (data) => {
 const tweetReply = async (data) => {
   const tweet = data.data
   console.log('💁‍♀️', data)
-  let excludedUsers = []
-  data.includes.users.forEach((user, index) => {
-    console.log('🐶',user, index)
-    if (index > 0) {
-      excludedUsers.push(user.id)
-    }
-  })
-  excludedUsers = excludedUsers.join(',')
-  console.log('🍋🍋',excludedUsers)
+  // let excludedUsers = []
+  // data.includes.users.forEach((user, index) => {
+  //   if (index > 0) {
+  //     excludedUsers.push(user.id)
+  //   }
+  // })
+  // excludedUsers = excludedUsers.join(',')
+  // console.log('🍋🍋',excludedUsers)
   const message = replyMessage(data)
   const options = {
-    in_reply_to_status_id: tweet.id_str,
+    in_reply_to_status_id: tweet.id,
     // auto_populate_reply_metadata: true,
     // exclude_reply_user_ids: excludedUsers
   }
@@ -171,7 +171,7 @@ const handleTweet = async (data) => {
 
 const listen = async () => {
   steamClient = new TwitterApi(process.env.TWITTER_API_BEARER_TOKEN)
-  console.log('🌸 server is listening to stream')
+  console.log('🔮 server is listening to stream')
   await clearRules()
   await addRules()
   try {
@@ -190,6 +190,6 @@ const listen = async () => {
 
 console.log('waiting to listen to stream…')
 setTimeout(() => {
-  console.log('🌷 starting listen to stream')
+  console.log('starting listen to stream')
   listen()
 }, 5 * 60 * 1000) // wait 5 minute to start streaming
