@@ -123,28 +123,36 @@ const addRules = async () => {
 
 // respond to streaming tweets
 
+const tweetById = async (id) => {
+  // const tweetId = tweet.conversation_id
+    // const reply = await tweetClient.v1.tweet(message, options)
+
+    // return tweet
+}
+
 const replyAndCreateSpace = async (data) => {
   const tweet = data.data
-  const username = data.includes.users[0].username
-  const kinopioUser = await utils.kinopioUser(username)
-  console.log('💁‍♀️', data, username)
+  const twitterUsername = data.includes.users[0].username
+  const kinopioUser = await utils.kinopioUser(twitterUsername)
+  const conversationTweet = await tweetById(tweet.conversation_id)
+  console.log('💁‍♀️', data, twitterUsername, conversationTweet)
   let message
   if (kinopioUser) {
-    message = utils.replyMessageSuccess(username)
+    message = utils.replyMessageSuccess(twitterUsername)
     console.log('🍋🍋🍋🍋',message)
-    await utils.createTweetsSpace(tweet, kinopioUser)
+    utils.createTweetsSpace(data, kinopioUser)
   } else {
-    message = utils.replyMessageError(username)
+    message = utils.replyMessageError(twitterUsername)
   }
   const options = {
     in_reply_to_status_id: tweet.id,
   }
-  if (process.env.NODE_ENV === 'production') {
+  // if (process.env.NODE_ENV === 'production') {
     const reply = await tweetClient.v1.tweet(message, options)
-    console.log('💌 replied', reply, options, utils.tweetUrl({ tweetId: reply.id_str }))
-  } else {
-    console.log('✉️ preflight reply', message, options)
-  }
+    console.log('💌 replied', reply, options, utils.tweetUrl({ tweetId: reply.id_str, username: clientUserName }))
+  // } else {
+  //   console.log('✉️ preflight reply', message, options)
+  // }
 }
 
 const handleTweet = async (data) => {
@@ -167,7 +175,11 @@ const listen = async () => {
   await clearRules()
   await addRules()
   try {
-    const stream = await steamClient.v2.searchStream({ expansions: ['author_id'], 'user.fields': ['username'] })
+    const stream = await steamClient.v2.searchStream({
+      expansions: ['author_id'],
+      'user.fields': ['username'],
+      'tweet.fields': ['conversation_id']
+    })
     stream.on(
       ETwitterStreamEvent.Data,
       eventData => {
