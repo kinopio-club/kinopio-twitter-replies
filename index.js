@@ -121,26 +121,36 @@ const addRules = async () => {
   console.log('🌝 rules added', rules)
 }
 
-// respond to streaming tweets
+// create tweet space
+
+const createSpace = async (data, kinopioUser) => {
+  const tweet = data.data
+  data.conversationTweet = await tweetById(tweet.conversation_id)
+  console.log('🌸', data.conversationTweet)
+  utils.createTweetsSpace(data, kinopioUser)
+}
 
 const tweetById = async (id) => {
-  // const tweetId = tweet.conversation_id
-    // const reply = await tweetClient.v1.tweet(message, options)
-
-    // return tweet
+  const tweet = await tweetClient.v2.singleTweet(id, {
+    expansions: ['author_id'],
+    'tweet.fields': ['text'],
+    'user.fields': ['username']
+  })
+  return tweet
 }
+
+// respond to streaming tweets
 
 const replyAndCreateSpace = async (data) => {
   const tweet = data.data
   const twitterUsername = data.includes.users[0].username
   const kinopioUser = await utils.kinopioUser(twitterUsername)
-  const conversationTweet = await tweetById(tweet.conversation_id)
-  console.log('💁‍♀️', data, twitterUsername, conversationTweet)
+  console.log('💁‍♀️', data, twitterUsername)
   let message
   if (kinopioUser) {
     message = utils.replyMessageSuccess(twitterUsername)
     console.log('🍋🍋🍋🍋',message)
-    utils.createTweetsSpace(data, kinopioUser)
+    createSpace(data, kinopioUser)
   } else {
     message = utils.replyMessageError(twitterUsername)
   }

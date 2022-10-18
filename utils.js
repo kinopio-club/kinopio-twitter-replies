@@ -4,6 +4,18 @@ const { Headers } = fetch
 
 export default {
 
+  // removeTwitterMentionsFromString (string) {
+    // @yolo @nasa we are cool → we are cool
+  // },
+
+  truncated (string, limit) {
+    if (!string) { return '' }
+    limit = limit || 60
+    if (string.length < limit) { return string }
+    string = string.substring(0, limit) + '…'
+    return string
+  },
+
   // kinopio
 
   apiHost () {
@@ -23,18 +35,25 @@ export default {
   },
   async createTweetsSpace (data, kinopioUser) {
     const tweet = data.data
-    const originalAuthorTwitterUsername = data.includes.users[1].username
+    const conversationTweet = data.conversationTweet
+    // const originalAuthorTwitterUsername = data.includes.users[1].username
     // ﻿author_id: '1580586621719674880',
     // ﻿edit_history_tweet_ids: [ '1582032020099985409' ],
     // ﻿id: '1582032020099985409',
     // ﻿text: '@WholesomeMeme @KinopioClub save'
-    console.log('🌷🌷🌷🌷🌷🌷 start createTweetsSpace', tweet, originalAuthorTwitterUsername)
+    //         conversationTweet: -> get originalAuthorTwitterUsername from it
+    console.log('🌷🌷🌷🌷🌷🌷 start createTweetsSpace', data)
     const apiHost = this.apiHost()
     const url = `${apiHost}/space/tweet`
+    const conversationAuthorUsername = conversationTweet.includes.users[0].username
+    let spaceName = `@${conversationAuthorUsername} ${conversationTweet.data.text}`
+    spaceName = this.truncated(spaceName)
+    console.log('🐢🐢🐢🐢🐢🐢', spaceName)
     const body = {
       secret: process.env.KINOPIO_TWITTER_REPLIES_SECRET,
       kinopioUserId: kinopioUser.id,
-      tweetId: tweet.id
+      tweetId: tweet.id,
+      spaceName
     }
     const response = await fetch(url, {
       headers: {
