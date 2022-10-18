@@ -11,13 +11,25 @@ export default {
       return 'http://kinopio.local:3000'
     }
   },
-
   async kinopioUser (username) {
     const apiHost = this.apiHost()
     const url = `${apiHost}/user/by-twitter-username/${username}`
     const user = await fetch(url)
     console.log('🍅🍅🍅🍅 TEMP',url, user)
     return user
+  },
+  async createTweetsSpace (tweet, kinopioUser) {
+
+    // ﻿author_id: '1580586621719674880',
+    // ﻿edit_history_tweet_ids: [ '1582032020099985409' ],
+    // ﻿id: '1582032020099985409',
+    // ﻿text: '@WholesomeMeme @KinopioClub save'
+
+    const apiHost = this.apiHost()
+
+    // POST to api /space w process.env.KINOPIO_TWITTER_REPLIES_SECRET
+
+    // return space
   },
 
   // twitter
@@ -26,7 +38,6 @@ export default {
     username = username || clientUserName
     return `https://twitter.com/${username}/status/${tweetId}`
   },
-
   replyMessageSuccess (username) {
     // const tweet = data.data
     // const spaceUrl = `https://kinopio.club/twitter-thread/${tweet.id}`
@@ -38,9 +49,7 @@ export default {
       // [threadname] was added to your kinopio spaces, [for this thread]
     return message
   },
-
   replyMessageError (username) {
     const message = `@${username} (シ_ _)シ could not save thread, \n\n please connect your twitter account to kinopio through Share → Import → Twitter`
   },
-
 }

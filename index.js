@@ -105,7 +105,8 @@ const clearRules = async () => {
 const addRules = async () => {
   const rules = await steamClient.v2.updateStreamRules({
     add: [
-      { value: '@kinopioclub save -from:kinopioclub', tag: 'reply with save' },
+      { value: '@kinopioclub -from:kinopioclub', tag: 'mentioned' },
+      { value: 'kinopio.club -from:kinopioclub', tag: 'space shared' },
     ]
   })
   console.log('🌝 rules added', rules)
@@ -113,7 +114,7 @@ const addRules = async () => {
 
 // respond to streaming tweets
 
-const tweetReply = async (data) => {
+const replyAndCreateSpace = async (data) => {
   const tweet = data.data
   const username = data.includes.users[0].username
   const kinopioUser = utils.kinopioUser(username)
@@ -121,7 +122,7 @@ const tweetReply = async (data) => {
   let message
   if (kinopioUser) {
     message = utils.replyMessageSuccess(username)
-    // TODO utils.addTwitterThreadSpace(tweet, kinopioUser)
+    utils.createTweetsSpace(tweet, kinopioUser)
   } else {
     message = utils.replyMessageError(username)
   }
@@ -137,12 +138,14 @@ const tweetReply = async (data) => {
 }
 
 const handleTweet = async (data) => {
+  const tweet = data.data
   const rule = data.matching_rules[0].tag
-  if (rule === 'reply with save') {
-    tweetReply(data)
+  const isSaveRequest = rule === 'mentioned' && tweet.text.includes('save')
+  if (isSaveRequest) {
+    replyAndCreateSpace(data)
   } else {
+    // non-save mentions, and tweets with spaces
     const username = data.includes.users[0].username
-    const tweet = data.data
     // TODO post to discord, pending noise becoming an issue
     console.log('💐 TODO post to discord', username, tweet, utils.tweetUrl({ tweetId: tweet.id_str, username }))
   }
