@@ -38,10 +38,19 @@ console.log('server is listening to http')
 // http
 app.get('/', (request, response) => {
   console.log('🐢 /')
-  response.json({
-    message: 'kinopio-twitter-replies is online',
-    repo: 'https://github.com/kinopio-club/kinopio-twitter-replies'
-  })
+  if (steamClient) {
+    response.json({
+      status: 200,
+      message: '🔮 kinopio-twitter-replies is streaming',
+      repo: 'https://github.com/kinopio-club/kinopio-twitter-replies'
+    })
+  } else {
+    response.status(503).json({
+      status: 503,
+      message: '🚑 kinopio-twitter-replies is waiting to stream…',
+      repo: 'https://github.com/kinopio-club/kinopio-twitter-replies'
+    })
+  }
 })
 
 // AUTH STEP 1: sign in to allow tweeting
@@ -86,7 +95,7 @@ app.get('/sign-in-complete', async (request, response) => {
   })
 })
 
-// init streaming
+// init stream rules
 
 const clearRules = async () => {
   let rules = await steamClient.v2.streamRules()
@@ -117,12 +126,13 @@ const addRules = async () => {
 const replyAndCreateSpace = async (data) => {
   const tweet = data.data
   const username = data.includes.users[0].username
-  const kinopioUser = utils.kinopioUser(username)
-  console.log('💁‍♀️', data, username, kinopioUser)
+  const kinopioUser = await utils.kinopioUser(username)
+  console.log('💁‍♀️', data, username)
   let message
   if (kinopioUser) {
     message = utils.replyMessageSuccess(username)
-    utils.createTweetsSpace(tweet, kinopioUser)
+    console.log('🍋🍋🍋🍋',message)
+    await utils.createTweetsSpace(tweet, kinopioUser)
   } else {
     message = utils.replyMessageError(username)
   }
@@ -133,7 +143,7 @@ const replyAndCreateSpace = async (data) => {
     const reply = await tweetClient.v1.tweet(message, options)
     console.log('💌 replied', reply, options, utils.tweetUrl({ tweetId: reply.id_str }))
   } else {
-    console.log('✉️ preflight reply', message, options, tweet.id_str)
+    console.log('✉️ preflight reply', message, options)
   }
 }
 
@@ -170,8 +180,14 @@ const listen = async () => {
   }
 }
 
-console.log('waiting to listen to stream…')
-setTimeout(() => {
-  console.log('starting listen to stream')
+// init listen to stream
+
+if (process.env.NODE_ENV === 'production') {
+  console.log('waiting to listen to stream…')
+  setTimeout(() => {
+    console.log('starting listen to stream')
+    listen()
+  }, 5 * 60 * 1000) // wait 5 minute to start streaming
+} else {
   listen()
-}, 5 * 60 * 1000) // wait 5 minute to start streaming
+}

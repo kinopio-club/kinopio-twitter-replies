@@ -1,4 +1,6 @@
 import _ from 'lodash'
+import fetch from 'node-fetch'
+const { Headers } = fetch
 
 export default {
 
@@ -14,22 +16,30 @@ export default {
   async kinopioUser (username) {
     const apiHost = this.apiHost()
     const url = `${apiHost}/user/by-twitter-username/${username}`
-    const user = await fetch(url)
-    console.log('🍅🍅🍅🍅 TEMP',url, user)
+    const response = await fetch(url)
+    const user = await response.json()
+
+
+    console.log('🍅 user', user)
     return user
   },
   async createTweetsSpace (tweet, kinopioUser) {
-
     // ﻿author_id: '1580586621719674880',
     // ﻿edit_history_tweet_ids: [ '1582032020099985409' ],
     // ﻿id: '1582032020099985409',
     // ﻿text: '@WholesomeMeme @KinopioClub save'
-
     const apiHost = this.apiHost()
+    const url = `${apiHost}/space/tweet`
+    const body = {
+      secret: process.env.KINOPIO_TWITTER_REPLIES_SECRET,
+      kinopioUserId: kinopioUser.id,
+      tweetId: tweet.id
+    }
+    const response = await fetch(url, {method: 'POST', body})
+    const space = await response.json()
 
-    // POST to api /space w process.env.KINOPIO_TWITTER_REPLIES_SECRET
-
-    // return space
+    console.log('🔮🔮🔮🔮🔮',space)
+    return space
   },
 
   // twitter
@@ -51,5 +61,6 @@ export default {
   },
   replyMessageError (username) {
     const message = `@${username} (シ_ _)シ could not save thread, \n\n please connect your twitter account to kinopio through Share → Import → Twitter`
+    return message
   },
 }
