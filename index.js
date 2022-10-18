@@ -123,13 +123,6 @@ const addRules = async () => {
 
 // create tweet space
 
-const createSpace = async (data, kinopioUser) => {
-  const tweet = data.data
-  data.conversationTweet = await tweetById(tweet.conversation_id)
-  console.log('🌸', data.conversationTweet)
-  utils.createTweetsSpace(data, kinopioUser)
-}
-
 const tweetById = async (id) => {
   const tweet = await tweetClient.v2.singleTweet(id, {
     expansions: ['author_id'],
@@ -137,6 +130,13 @@ const tweetById = async (id) => {
     'user.fields': ['username']
   })
   return tweet
+}
+
+const createSpace = async (data, kinopioUser) => {
+  const tweet = data.data
+  data.conversationTweet = await tweetById(tweet.conversation_id)
+  console.log('🌸', data.conversationTweet)
+  utils.createTweetsSpace(data, kinopioUser)
 }
 
 // respond to streaming tweets
