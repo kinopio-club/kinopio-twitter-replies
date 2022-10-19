@@ -157,12 +157,12 @@ const replyAndCreateSpace = async (data) => {
   const options = {
     in_reply_to_status_id: tweet.id,
   }
-  // if (process.env.NODE_ENV === 'production') {
+  if (process.env.NODE_ENV === 'production') {
     const reply = await tweetClient.v1.tweet(message, options)
     console.log('💌 replied', reply, options, utils.tweetUrl({ tweetId: reply.id_str, username: clientUserName }))
-  // } else {
-  //   console.log('✉️ preflight reply', message, options)
-  // }
+  } else {
+    console.log('✉️ preflight reply', message, options)
+  }
 }
 
 const handleTweet = async (data) => {
