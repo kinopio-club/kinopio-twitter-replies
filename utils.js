@@ -47,7 +47,7 @@ export default {
     const url = `${apiHost}/space/tweet`
     const conversationAuthorUsername = conversationTweet.includes.users[0].username
     let spaceName = `@${conversationAuthorUsername}: ${conversationTweet.data.text}`
-    spaceName = this.truncated(spaceName, 40)
+    spaceName = this.truncated(spaceName, 35)
     console.log('🐢🐢🐢🐢🐢🐢', spaceName)
     const body = {
       secret: process.env.KINOPIO_TWITTER_REPLIES_SECRET,
