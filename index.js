@@ -149,7 +149,7 @@ const replyAndCreateSpace = async (data) => {
   let message
   if (kinopioUser) {
     message = utils.replyMessageSuccess(twitterUsername)
-    console.log('🍋🍋🍋🍋',message)
+    console.log('🍋',message)
     createSpace(data, kinopioUser)
   } else {
     message = utils.replyMessageError(twitterUsername)
