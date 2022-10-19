@@ -10,7 +10,7 @@ export default {
 
   truncated (string, limit) {
     if (!string) { return '' }
-    limit = limit || 50
+    limit = limit || 60
     if (string.length < limit) { return string }
     string = string.substring(0, limit) + '…'
     return string
@@ -47,7 +47,7 @@ export default {
     const url = `${apiHost}/space/tweet`
     const conversationAuthorUsername = conversationTweet.includes.users[0].username
     let spaceName = `@${conversationAuthorUsername}: ${conversationTweet.data.text}`
-    spaceName = this.truncated(spaceName)
+    spaceName = this.truncated(spaceName, 40)
     console.log('🐢🐢🐢🐢🐢🐢', spaceName)
     const body = {
       secret: process.env.KINOPIO_TWITTER_REPLIES_SECRET,
