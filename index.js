@@ -114,8 +114,8 @@ const clearRules = async () => {
 const addRules = async () => {
   const rules = await steamClient.v2.updateStreamRules({
     add: [
-      { value: '@kinopioclub -from:kinopioclub', tag: 'mentioned' },
-      { value: 'kinopio.club -from:kinopioclub', tag: 'space shared' },
+      { value: '@kinopioclub -from:kinopioclub -is:retweet', tag: 'mentioned' },
+      { value: 'kinopio.club -from:kinopioclub -is:retweet', tag: 'space shared' },
     ]
   })
   console.log('🌝 rules added', rules)
