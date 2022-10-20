@@ -30,8 +30,13 @@ export default {
     const url = `${apiHost}/user/by-twitter-username/${twitterUsername}`
     const response = await fetch(url)
     const user = await response.json()
-    console.log('🧑‍🍳 twitter username → kinopio user', twitterUsername, user.id, user.name)
-    return user
+    if (user) {
+      console.log('🧑‍🍳 twitter username → kinopio user', twitterUsername, user.id, user.name)
+      return user
+    } else {
+      console.log('💦 user not found for', twitterUsername)
+      return null
+    }
   },
   async createTweetsSpace (data, kinopioUser) {
     const tweet = data.data

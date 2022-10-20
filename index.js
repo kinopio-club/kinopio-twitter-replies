@@ -114,8 +114,8 @@ const clearRules = async () => {
 const addRules = async () => {
   const rules = await steamClient.v2.updateStreamRules({
     add: [
-      { value: '@kinopioclub -from:kinopioclub', tag: 'mentioned' },
-      { value: 'kinopio.club -from:kinopioclub', tag: 'space shared' },
+      { value: '@kinopioclub -from:kinopioclub -is:retweet', tag: 'mentioned' },
+      { value: 'kinopio.club -from:kinopioclub -is:retweet', tag: 'space shared' },
     ]
   })
   console.log('🌝 rules added', rules)
@@ -187,6 +187,7 @@ const listen = async () => {
   await clearRules()
   await addRules()
   try {
+    // https://github.com/PLhery/node-twitter-api-v2/blob/master/doc/streaming.md
     const stream = await steamClient.v2.searchStream({
       expansions: ['author_id'],
       'user.fields': ['username'],
@@ -197,6 +198,19 @@ const listen = async () => {
       eventData => {
         handleTweet(eventData)
       },
+    )
+    stream.on(
+      ETwitterStreamEvent.ConnectionClosed,
+      () => console.log('🚒 Connection has been closed'),
+    )
+    stream.on(
+      ETwitterStreamEvent.ConnectionError,
+      err => console.log('🚒 Connection error', err),
+    )
+    stream.on(
+      // Emitted when a Twitter sent a signal to maintain connection active
+      ETwitterStreamEvent.DataKeepAlive,
+      () => console.log('💕 Twitter sent a keep-alive signal'),
     )
     stream.autoReconnect = true
   } catch (error) {
