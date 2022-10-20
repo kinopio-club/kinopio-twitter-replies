@@ -171,11 +171,13 @@ const handleTweet = async (data) => {
   const isSaveRequest = rule === 'mentioned' && tweet.text.includes('save')
   if (isSaveRequest) {
     replyAndCreateSpace(data)
+  // if else ..
+  // TODO support DMs to save
   } else {
-    // non-save mentions, and tweets with spaces
+    // all other mentions, and tweets with spaces
     const username = data.includes.users[0].username
     // TODO post to discord, pending noise becoming an issue
-    console.log('💐 TODO post to discord', username, tweet, utils.tweetUrl({ tweetId: tweet.id_str, username }))
+    console.log('💐 TODO post to discord', username, tweet, utils.tweetUrl({ tweetId: tweet.id, username }))
   }
 }
 
