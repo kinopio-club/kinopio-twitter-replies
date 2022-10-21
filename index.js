@@ -12,7 +12,7 @@ import { ETwitterStreamEvent, TweetStream, TwitterApi, ETwitterApiError } from '
 
 import utils from './utils.js'
 
-let steamClient, tweetClient, clientUserName
+let streamClient, tweetClient, clientUserName
 
 if (process.env.TWITTER_ACCESS_TOKEN) {
   tweetClient = new TwitterApi({
@@ -38,7 +38,7 @@ console.log('server is listening to http')
 // http
 app.get('/', (request, response) => {
   console.log('🐢 /')
-  if (steamClient) {
+  if (streamClient) {
     response.json({
       status: 200,
       message: '🔮 kinopio-twitter-replies is streaming',
@@ -98,21 +98,21 @@ app.get('/sign-in-complete', async (request, response) => {
 // init stream rules
 
 const clearRules = async () => {
-  let rules = await steamClient.v2.streamRules()
+  let rules = await streamClient.v2.streamRules()
   if (rules.data) {
     const rulesIds = rules.data.map(rule => rule.id)
-    await steamClient.v2.updateStreamRules({
+    await streamClient.v2.updateStreamRules({
       delete: {
         ids: rulesIds,
       },
     })
   }
-  rules = await steamClient.v2.streamRules()
+  rules = await streamClient.v2.streamRules()
   console.log('🌚 rules cleared')
 }
 
 const addRules = async () => {
-  const rules = await steamClient.v2.updateStreamRules({
+  const rules = await streamClient.v2.updateStreamRules({
     add: [
       { value: '@kinopioclub -from:kinopioclub -is:retweet', tag: 'mentioned' },
       { value: 'kinopio.club -from:kinopioclub -is:retweet', tag: 'space shared' },
@@ -182,13 +182,13 @@ const handleTweet = async (data) => {
 }
 
 const listen = async () => {
-  steamClient = new TwitterApi(process.env.TWITTER_API_BEARER_TOKEN)
+  streamClient = new TwitterApi(process.env.TWITTER_API_BEARER_TOKEN)
   console.log('🔮 server is listening to stream')
   await clearRules()
   await addRules()
   try {
     // https://github.com/PLhery/node-twitter-api-v2/blob/master/doc/streaming.md
-    const stream = await steamClient.v2.searchStream({
+    const stream = await streamClient.v2.searchStream({
       expansions: ['author_id'],
       'user.fields': ['username'],
       'tweet.fields': ['conversation_id']
@@ -201,11 +201,15 @@ const listen = async () => {
     )
     stream.on(
       ETwitterStreamEvent.ConnectionClosed,
-      () => console.log('🚒 Connection has been closed'),
+      () => {
+        console.log('🚒 Connection has been closed')
+        stream.close()
+        listen()
+      },
     )
     stream.on(
       ETwitterStreamEvent.ConnectionError,
-      err => console.log('🚒 Connection error', err),
+      error => console.log('🚒 Connection error', error),
     )
     stream.on(
       // Emitted when a Twitter sent a signal to maintain connection active
