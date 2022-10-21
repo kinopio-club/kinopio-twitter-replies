@@ -212,7 +212,7 @@ const listen = async () => {
       error => console.log('🚒 Connection error', error),
     )
     stream.on(
-      // Emitted when a Twitter sent a signal to maintain connection active
+      // Emitted when Twitter sends a signal to keep connection active
       ETwitterStreamEvent.DataKeepAlive,
       () => console.log('💕 Twitter sent a keep-alive signal'),
     )
